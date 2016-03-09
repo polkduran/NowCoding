@@ -2,9 +2,48 @@
 // for more guidance on F# programming.
 
 #load "Lib.fs"
-open DecisionTrees
 
-let d = [(1.0,true);(2.0,true);(3.0,true);(2.0,true);(2.0,true)]
+type Gender = |Male |Female
+type Row = {Gender:Gender; Phd:bool; IsEvil:bool}
 
-let efst = entropy d fst
-let esnd = entropy d snd
+let data = [
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=true} ;
+            {Gender=Male ;Phd=false ;IsEvil=true} ;
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Female ;Phd=false ;IsEvil=false};
+            {Gender=Male ;Phd=true ;IsEvil=true} ;
+            {Gender=Male ;Phd=true ;IsEvil=true} ;
+            {Gender=Female ;Phd=true ;IsEvil=true} ;
+            {Gender=Female ;Phd=true ;IsEvil=true} ;
+            {Gender=Male ;Phd=true ;IsEvil=false};
+            ]
+let genderSelector = fun (r:Row) -> r.Gender
+let phdSelector = fun (r:Row) -> r.Phd
+let isEvilSelector = fun (r:Row) -> r.IsEvil
+
+let e = ``DecisionTrees﻿``.entropy isEvilSelector data 
+let g = ``DecisionTrees﻿``.gain data isEvilSelector genderSelector 
+let g' = ``DecisionTrees﻿``.gain data isEvilSelector phdSelector  
+
+
