@@ -38,12 +38,13 @@ let data = [
             {Gender=Female ;Phd=true ;IsEvil=true} ;
             {Gender=Male ;Phd=true ;IsEvil=false};
             ]
-let genderSelector = fun (r:Row) -> r.Gender
-let phdSelector = fun (r:Row) -> r.Phd
+let genderSelector = fun (r:Row) -> r.Gender :> obj
+let phdSelector = fun (r:Row) -> r.Phd :> obj
 let isEvilSelector = fun (r:Row) -> r.IsEvil
 
 let e = ``DecisionTrees﻿``.entropy isEvilSelector data 
 let g = ``DecisionTrees﻿``.gain data isEvilSelector genderSelector 
 let g' = ``DecisionTrees﻿``.gain data isEvilSelector phdSelector  
+
 
 
