@@ -8,35 +8,35 @@ type Row = {Gender:Gender; Phd:bool; IsEvil:bool}
 
 let data = [
             {Gender=Female ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=true} ;
-            {Gender=Male ;Phd=false ;IsEvil=true} ;
+            {Gender=Male   ;Phd=false ;IsEvil=true} ;
+            {Gender=Male   ;Phd=false ;IsEvil=true} ;
             {Gender=Female ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
+            {Gender=Male   ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
             {Gender=Female ;Phd=false ;IsEvil=false};
-            {Gender=Male ;Phd=true ;IsEvil=true} ;
-            {Gender=Male ;Phd=true ;IsEvil=true} ;
-            {Gender=Female ;Phd=true ;IsEvil=true} ;
-            {Gender=Female ;Phd=true ;IsEvil=true} ;
-            {Gender=Male ;Phd=true ;IsEvil=false};
+            {Gender=Male   ;Phd=true  ;IsEvil=true} ;
+            {Gender=Male   ;Phd=true  ;IsEvil=true} ;
+            {Gender=Female ;Phd=true  ;IsEvil=true} ;
+            {Gender=Female ;Phd=true  ;IsEvil=true} ;
+            {Gender=Male   ;Phd=true  ;IsEvil=false};
             ]
 let genderSelector = fun (r:Row) -> r.Gender :> obj
 let phdSelector = fun (r:Row) -> r.Phd :> obj
@@ -45,6 +45,35 @@ let isEvilSelector = fun (r:Row) -> r.IsEvil
 let e = ``DecisionTrees﻿``.entropy isEvilSelector data 
 let g = ``DecisionTrees﻿``.gain data isEvilSelector genderSelector 
 let g' = ``DecisionTrees﻿``.gain data isEvilSelector phdSelector  
+
+let evTree = ``DecisionTrees﻿``.trainID3 data isEvilSelector [phdSelector; genderSelector]
+
+
+
+type Mov = {Action:bool; SciFi:bool; Actor:string}
+
+let catSelector = fun (m:Mov) -> m.Actor
+let actionSelector = fun (m:Mov) -> m.Action :> obj
+let sciFiSelector = fun (m:Mov) -> m.SciFi :> obj
+
+let root = ``DecisionTrees﻿``.Choice(
+                sciFiSelector, [
+                        (true :> obj, ``DecisionTrees﻿``.Category("A"))
+                        (false:> obj, ``DecisionTrees﻿``.Choice(actionSelector, [
+                                                                  (true :> obj, ``DecisionTrees﻿``.Category("S"));
+                                                                  (false:> obj, ``DecisionTrees﻿``.Category("A"))
+                        ]
+                        ))
+                ])
+
+let d = [|
+            {Action=true;SciFi=false;Actor="S"};
+            {Action=true;SciFi=false;Actor="S"};
+            {Action=false;SciFi=false;Actor="A"};
+            {Action=true;SciFi=true;Actor="A"};
+            {Action=true;SciFi=true;Actor="A"}
+        |]
+let tree = ``DecisionTrees﻿``.trainID3 d catSelector [actionSelector; sciFiSelector]
 
 
 

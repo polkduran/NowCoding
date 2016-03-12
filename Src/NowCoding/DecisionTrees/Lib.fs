@@ -22,10 +22,10 @@ let private entropyInternal (categorySelector:'T -> 'U) (data:'T seq) =
 
 let entropy (categorySelector:'T -> 'U) (data:'T seq) = entropyInternal categorySelector data |> fst
   
-let gain (data:'T seq) (categorySelector:'T -> 'U) (partSelector:('T -> obj)) =
+let gain (data:'T seq) (categorySelector:'T -> 'U) (featureSelector:('T -> obj)) =
     let dataEntr, dataCount = entropyInternal categorySelector data
     let partDataEntr = data 
-                        |> Seq.groupBy partSelector
+                        |> Seq.groupBy featureSelector
                         |> Seq.map (fun (a, part) -> part, part |> Seq.length |> float)
                         |> Seq.map (fun (part, partCount) -> partCount/float(dataCount), entropy categorySelector part) // seq<float * float>
                         |> Seq.sumBy (fun (pt, ht) -> pt * ht)
@@ -34,7 +34,7 @@ let gain (data:'T seq) (categorySelector:'T -> 'U) (partSelector:('T -> obj)) =
 
 type TreeNode<'T, 'U> = 
         |Category of 'U
-        |Node of ('T -> obj) * (obj * TreeNode<'T, 'U>) list
+        |Choice of ('T -> obj) * (obj * TreeNode<'T, 'U>) list
 
 type Tree<'T, 'U> = |Root of TreeNode<'T, 'U>
 
@@ -48,54 +48,67 @@ let classify (datum:'T) (tree:Tree<'T, 'U>) =
     let rec classifyInt (node:TreeNode<'T, 'U>) =
         match node with
         | Category(category) -> category
-        | Node(selector, nodes) -> match chooseNode selector nodes with
-                                   | Some(node) -> classifyInt node
-                                   | None -> failwith "no node"
+        | Choice(selector, nodes) -> match chooseNode selector nodes with
+                                        | Some(node) -> classifyInt node
+                                        | None -> failwith "no node"
 
     let root = match tree with |Root(r) -> r
     let value = classifyInt root
     value
 
-let trainID3 (data: 'T seq) (categorySelector:'T -> 'U) (features: seq<'T -> obj>) = 
-    
-    let rec trainID3Int restData (featureSelector:'T -> obj) (currentNode:TreeNode<'T, 'U>) (otherFeatures: ('T -> obj) list) =
-        let restDataCount = restData |> Seq.length |> float
-        let getDataDistribution featureData =
-            let featDataByCatProb = featureData 
-                                    |> Seq.groupBy categorySelector
-                                    |> Seq.map (fun (cat, d) -> cat, (d |> Seq.length |> float) / restDataCount)
-            featDataByCatProb
+let trainID3 (data: 'T seq) (categorySelector:'T -> 'U) (features: ('T -> obj) list) = 
+    let rec getOptFeature (feature:(('T -> obj) * float) option) (restFeatures: ('T -> obj) list) restData acc =
+        match feature, restFeatures with
+        | None, [] -> failwith "max with empty"
+        | None, f::[] -> f, acc
+        | None, f::r -> getOptFeature (Some(f, gain restData categorySelector f))  r restData acc
+        | Some(f, gainF), [] -> f, acc
+        | Some(f1, gainF1), f2::r -> 
+                            let gainF2 = gain restData categorySelector f2
+                            if gainF1 > gainF2 then
+                                getOptFeature (Some(f1,gainF1)) r restData (f2::acc)
+                            else
+                                getOptFeature (Some(f2,gainF2)) r restData (f1::acc)
+
+    let getMaxCatProb featureData =
+        let len = Seq.length >> float
+        let dataCount = featureData |> len
+        let featDataByCatProb = featureData 
+                                |> Seq.groupBy categorySelector
+                                |> Seq.map (fun (cat, d) -> cat, (d |> len) / dataCount)
+        let maxCat = featDataByCatProb |> Seq.maxBy snd |> fst
+        maxCat
         
-        match otherFeatures with
-        | [] -> let partData = restData 
-                                    |> Seq.groupBy featureSelector
-                                    |> Seq.map (fun (feature, featData) -> feature, getDataDistribution featData) 
-                                    |> Seq.map (fun (feature, featDataByCatProb) -> feature, featDataByCatProb |> Seq.maxBy snd |> fst ) // can keep the probability
-                                    |> Seq.map (fun (feature, cat) -> feature, Category(cat)) |> Seq.toList
-                Node(featureSelector, partData)
-    ()
+    let rec trainID3Int (restData: 'T seq) (restFeatures: ('T -> obj) list) =
+        match restFeatures with
+        | [] -> failwith "emtpy features"
+        | featureSelector::[] ->  
+                let partData = restData 
+                            |> Seq.groupBy featureSelector
+                            |> Seq.map (fun (feature, featData) -> feature, getMaxCatProb featData) 
+                            |> Seq.map (fun (feature, cat) -> feature, Category(cat)) |> Seq.toList
+                Choice(featureSelector, partData)
+        | _ -> let bestFeature, others =  getOptFeature None restFeatures restData []
+               let uniqueCategory = Seq.groupBy categorySelector >> Seq.length >> (=)1
+               let catPart, choicePart = restData 
+                                            |> Seq.groupBy bestFeature |> Seq.toList
+                                            |> List.partition (snd >> uniqueCategory)
+               let catNodes = catPart 
+                                |> Seq.map (fun (featVal, featData) -> featVal, Category(featData |> Seq.head |> categorySelector))
+                                |> Seq.toList
+               let choiceNodes = choicePart 
+                                    |> Seq.map (fun (featVal, featData) -> featVal, trainID3Int featData others )
+                                    |> Seq.toList
+               Choice(bestFeature, catNodes@choiceNodes)
 
-               
-type Mov = {Action:bool; SciFi:bool; Actor:string}
+    let rootNode = match features with
+                    | [] -> let cat = getMaxCatProb data
+                            Category(cat)
+                    | _ -> trainID3Int data features
+    Root(rootNode)
 
-let catSelector = fun (m:Mov) -> m.Actor
-let actionSelector = fun (m:Mov) -> m.Action :> obj
-let sciFiSelector = fun (m:Mov) -> m.SciFi :> obj
 
-let root = Node(
-                sciFiSelector, [
-                        (true :> obj, Category("A"))
-                        (false:> obj, Node(actionSelector, [
-                                            (true :> obj, Category("S"));
-                                            (false:> obj, Category("A"))
-                        ]
-                        ))
-                ])
-let tree = Root(root)
 
-let t1 = {Action=true;  SciFi=true;  Actor=""}
-let t2 = {Action=true;  SciFi=false; Actor=""}
-let t3 = {Action=false; SciFi=true;  Actor=""}
-let t4 = {Action=false; SciFi=false; Actor=""}
+
 
 
