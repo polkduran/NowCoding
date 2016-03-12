@@ -13,7 +13,6 @@ let private entropyInternal (categorySelector:'T -> 'U) (data:'T seq) =
                             |> Seq.groupBy categorySelector // seq<'U * seq<'T>>
                             |> Seq.map (fun (a, ga) -> ga |> Seq.length |> float) //seq<float>
                             |> Seq.map (fun pa -> pa/float(dataCount) ) //seq<float>
-    // partDataByFeature : 
     let entr = probByCategory 
                 |> Seq.sumBy (fun px -> px * log2 px)
                 |> fun e -> -e
@@ -33,7 +32,7 @@ let gain (data:'T seq) (categorySelector:'T -> 'U) (featureSelector:('T -> obj))
     dataEntr-partDataEntr
 
 type TreeNode<'T, 'U> = 
-        |Category of 'U
+        |Category of 'U * float
         |Choice of ('T -> obj) * (obj * TreeNode<'T, 'U>) list
 
 type Tree<'T, 'U> = |Root of TreeNode<'T, 'U>
@@ -41,16 +40,14 @@ type Tree<'T, 'U> = |Root of TreeNode<'T, 'U>
 let classify (datum:'T) (tree:Tree<'T, 'U>) = 
     let rec chooseNode (selector:('T -> obj)) (nodes:( obj * TreeNode<'T, 'U>) list) =
         match nodes with
-        | (value, node)::_ when selector(datum) = value -> Some(node)
+        | (value, node)::_ when selector(datum) = value -> node
         | c::r -> chooseNode selector r
-        | [] -> None
+        | [] -> failwith <| sprintf "no node for selector %A and datum %A" selector datum
 
     let rec classifyInt (node:TreeNode<'T, 'U>) =
         match node with
-        | Category(category) -> category
-        | Choice(selector, nodes) -> match chooseNode selector nodes with
-                                        | Some(node) -> classifyInt node
-                                        | None -> failwith "no node"
+        | Category(category, prob) -> category
+        | Choice(selector, nodes) -> chooseNode selector nodes |> classifyInt
 
     let root = match tree with |Root(r) -> r
     let value = classifyInt root
@@ -76,7 +73,7 @@ let trainID3 (data: 'T seq) (categorySelector:'T -> 'U) (features: ('T -> obj) l
         let featDataByCatProb = featureData 
                                 |> Seq.groupBy categorySelector
                                 |> Seq.map (fun (cat, d) -> cat, (d |> len) / dataCount)
-        let maxCat = featDataByCatProb |> Seq.maxBy snd |> fst
+        let maxCat = featDataByCatProb |> Seq.maxBy snd //|> fst
         maxCat
         
     let rec trainID3Int (restData: 'T seq) (restFeatures: ('T -> obj) list) =
@@ -94,7 +91,7 @@ let trainID3 (data: 'T seq) (categorySelector:'T -> 'U) (features: ('T -> obj) l
                                             |> Seq.groupBy bestFeature |> Seq.toList
                                             |> List.partition (snd >> uniqueCategory)
                let catNodes = catPart 
-                                |> Seq.map (fun (featVal, featData) -> featVal, Category(featData |> Seq.head |> categorySelector))
+                                |> Seq.map (fun (featVal, featData) -> featVal, Category(featData |> Seq.head |> categorySelector, 1.0))
                                 |> Seq.toList
                let choiceNodes = choicePart 
                                     |> Seq.map (fun (featVal, featData) -> featVal, trainID3Int featData others )

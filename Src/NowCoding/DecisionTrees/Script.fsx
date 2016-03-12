@@ -48,7 +48,7 @@ let g' = ``DecisionTrees﻿``.gain data isEvilSelector phdSelector
 
 let evTree = ``DecisionTrees﻿``.trainID3 data isEvilSelector [phdSelector; genderSelector]
 
-
+Printf.k
 
 type Mov = {Action:bool; SciFi:bool; Actor:string}
 
@@ -58,10 +58,10 @@ let sciFiSelector = fun (m:Mov) -> m.SciFi :> obj
 
 let root = ``DecisionTrees﻿``.Choice(
                 sciFiSelector, [
-                        (true :> obj, ``DecisionTrees﻿``.Category("A"))
+                        (true :> obj, ``DecisionTrees﻿``.Category("A", 1.0))
                         (false:> obj, ``DecisionTrees﻿``.Choice(actionSelector, [
-                                                                  (true :> obj, ``DecisionTrees﻿``.Category("S"));
-                                                                  (false:> obj, ``DecisionTrees﻿``.Category("A"))
+                                                                  (true :> obj, ``DecisionTrees﻿``.Category("S", 1.0));
+                                                                  (false:> obj, ``DecisionTrees﻿``.Category("A", 1.0))
                         ]
                         ))
                 ])
@@ -74,6 +74,4 @@ let d = [|
             {Action=true;SciFi=true;Actor="A"}
         |]
 let tree = ``DecisionTrees﻿``.trainID3 d catSelector [actionSelector; sciFiSelector]
-
-
 
