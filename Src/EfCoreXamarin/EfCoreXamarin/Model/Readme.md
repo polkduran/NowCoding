@@ -1,4 +1,5 @@
-﻿Add portable project
+﻿
+Add Model portable project
 Transform to Netstandard 1.4 (https://docs.nuget.org/ndocs/guides/create-net-standard-packages-vs2015)
 Create model
 Add packages:
