@@ -8,6 +8,8 @@
 
         public int Age { get; set; }
 
+        public abstract string Kind { get; }
+
         public Person Owner { get; set; }
     }
 }

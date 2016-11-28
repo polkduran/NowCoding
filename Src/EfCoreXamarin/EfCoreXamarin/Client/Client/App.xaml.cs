@@ -15,7 +15,7 @@ namespace Client
         {
             InitializeComponent();
 
-            MainPage = new Client.MainPage();
+            MainPage = new NavigationPage(new Client.MainPage());
         }
 
         protected override void OnStart()

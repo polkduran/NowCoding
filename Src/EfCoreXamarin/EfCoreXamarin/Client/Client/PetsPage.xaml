@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Client.PetsPage"
+             xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.ColumnSpan="2" Text="Pets" />
+
+        <Label x:Name="InfosLabel"
+               Grid.Row="1"
+               Grid.Column="0"
+               Grid.ColumnSpan="2"
+               TextColor="Red" />
+
+        <Entry x:Name="PetNameEntry"
+               Grid.Row="2"
+               Grid.Column="0" />
+        <Button Grid.Row="2"
+                Grid.Column="1"
+                Clicked="AddPet_OnClicked"
+                Text="Add new pet" />
+
+        <Label Grid.Row="3"
+               Grid.Column="0"
+               Text="Kind" />
+        <Picker x:Name="AnimalKindPicker"
+                Title="Kind"
+                Grid.Row="3"
+                Grid.Column="1" />
+
+        <Label Grid.Row="4"
+               Grid.Column="0"
+               Text="Owner" />
+        <Picker x:Name="OwnerPicker"
+                Title="Owner"
+                Grid.Row="4"
+                Grid.Column="1" />
+
+        <ListView x:Name="PetListView"
+                  Grid.Row="5"
+                  Grid.Column="0"
+                  Grid.ColumnSpan="2">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Text="{Binding Name}" />
+                            <Label Grid.Column="1" Text="{Binding Kind}" />
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+    </Grid>
+</ContentPage>

@@ -4,8 +4,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Client">
 
-    <Label HorizontalOptions="Center"
-           Text="Welcome to Xamarin Forms!"
-           VerticalOptions="Center" />
-
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Button Clicked="DisplayPeople_OnClicked" Text="People" />
+        <Button Grid.Row="1"
+                Clicked="DisplayPets_OnClicked"
+                Text="Pets" />
+    </Grid>
 </ContentPage>
