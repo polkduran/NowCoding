@@ -46,6 +46,10 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Lib.fs" />
     <None Include="Script.fsx" />
+    <None Include="Script1.fsx" />
+    <None Include="Script2.fsx" />
+    <None Include="Script3.fsx" />
+    <None Include="Script4.fsx" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
