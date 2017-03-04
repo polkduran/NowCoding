@@ -1,0 +1,1 @@
+﻿Add-Migration InitialMigration -OutputDir ../EF.Model/Migrations -Project EF.Model -StartupProject EF.Console

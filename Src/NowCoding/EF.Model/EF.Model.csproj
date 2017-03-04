@@ -39,8 +39,17 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EfDataContext.cs" />
+    <Compile Include="Migrations\20170228224341_InitialMigration.cs" />
+    <Compile Include="Migrations\20170228224341_InitialMigration.designer.cs">
+      <DependentUpon>20170228224341_InitialMigration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\EfDataContextModelSnapshot.cs" />
+    <Compile Include="Model\Dog.cs" />
+    <Compile Include="Model\Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
